@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Selva Mia — Restaurante</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --black:     #090909;
+      --dark:      #111111;
+      --mid:       #181818;
+      --card:      #1e1e1e;
+      --green:     #4CAF50;
+      --green-dk:  #3d8b40;
+      --green-lt:  #66BB6A;
+      --white:     #ffffff;
+      --light:     #e0e0e0;
+      --muted:     #888888;
+      --border:    rgba(255,255,255,0.08);
+      --border-g:  rgba(76,175,80,0.25);
+      --radius:    10px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Roboto', sans-serif;
+      font-weight: 400;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--black); }
+    ::-webkit-scrollbar-thumb { background: var(--green); border-radius: 3px; }
+
+    /* ══════════════════════════════════
+       NAV
+    ══════════════════════════════════ */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      height: 68px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px;
+      background: rgba(9,9,9,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      transition: height 0.35s ease, background 0.35s ease;
+    }
+    nav.scrolled { height: 58px; background: rgba(9,9,9,0.97); }
+
+    .nav-logo {
+      display: flex; align-items: center; gap: 9px;
+      text-decoration: none;
+    }
+    .nav-logo img {
+      height: 32px;
+      filter: brightness(0) invert(1);
+      transition: opacity 0.2s;
+    }
+    .nav-logo span {
+      font-family: 'Ubuntu', sans-serif;
+      font-size: 0.9rem; font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--green);
+      text-transform: uppercase;
+    }
+    .nav-logo:hover img { opacity: 0.82; }
+
+    .nav-links {
+      display: flex; align-items: center; gap: 2px;
+      list-style: none;
+    }
+    .nav-links > li { position: relative; }
+    .nav-links > li > a {
+      display: flex; align-items: center; gap: 4px;
+      padding: 8px 14px;
+      color: var(--light); font-size: 0.875rem; font-weight: 400;
+      text-decoration: none; border-radius: var(--radius);
+      transition: color 0.2s, background 0.2s;
+    }
+    .nav-links > li > a:hover { color: var(--white); background: rgba(255,255,255,0.05); }
+    .nav-links > li > a .chev {
+      width: 11px; height: 11px;
+      transition: transform 0.22s ease;
+    }
+    .nav-links > li:hover > a .chev { transform: rotate(180deg); }
+
+    /* dropdown */
+    .drop {
+      position: absolute; top: calc(100% + 10px); left: 50%;
+      transform: translateX(-50%) translateY(-6px);
+      min-width: 200px;
+      background: var(--card);
+      border: 1px solid var(--border-g);
+      border-radius: var(--radius);
+      padding: 6px;
+      opacity: 0; visibility: hidden;
+      transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1), visibility 0.22s;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .nav-links > li:hover .drop { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+    .drop a {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 13px;
+      color: var(--light); font-size: 0.875rem;
+      text-decoration: none; border-radius: 8px;
+      transition: background 0.15s, color 0.15s, padding-left 0.15s;
+    }
+    .drop a:hover { background: rgba(76,175,80,0.1); color: var(--white); padding-left: 17px; }
+    .drop-tag {
+      font-size: 0.65rem; padding: 2px 7px;
+      background: rgba(76,175,80,0.15); color: var(--green-lt);
+      border-radius: 20px; border: 1px solid rgba(76,175,80,0.3);
+    }
+
+    .btn-res {
+      padding: 9px 22px;
+      background: var(--green); color: var(--black);
+      font-family: 'Roboto', sans-serif; font-size: 0.875rem; font-weight: 500;
+      border: none; border-radius: var(--radius);
+      cursor: pointer; text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-res:hover { background: var(--green-lt); transform: translateY(-1px); }
+    .btn-res:active { transform: scale(0.98); }
+
+    /* hamburger */
+    .ham {
+      display: none; flex-direction: column; gap: 5px;
+      background: none; border: none; cursor: pointer; padding: 5px;
+    }
+    .ham span { display: block; width: 22px; height: 2px; background: var(--white); border-radius: 2px; transition: all 0.28s; }
+    .ham.open span:nth-child(1) { transform: rotate(45deg) translate(5px,5px); }
+    .ham.open span:nth-child(2) { opacity: 0; }
+    .ham.open span:nth-child(3) { transform: rotate(-45deg) translate(5px,-5px); }
+
+    .mob-menu {
+      display: none; position: fixed;
+      top: 68px; left: 0; right: 0; bottom: 0;
+      background: var(--black); z-index: 899;
+      overflow-y: auto; padding: 8px 20px 30px;
+    }
+    .mob-menu.open { display: block; }
+    .mob-item { border-bottom: 1px solid var(--border); }
+    .mob-item > a,
+    .mob-toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 15px 4px;
+      color: var(--white); font-size: 1rem; font-weight: 400;
+      text-decoration: none; background: none; border: none;
+      width: 100%; text-align: left; cursor: pointer;
+    }
+    .mob-sub { display: none; padding-bottom: 8px; }
+    .mob-sub.open { display: block; }
+    .mob-sub a {
+      display: block; padding: 10px 16px;
+      color: var(--muted); font-size: 0.9rem;
+      text-decoration: none; border-radius: 8px;
+      transition: color 0.2s;
+    }
+    .mob-sub a:hover { color: var(--green-lt); }
+
+    /* ══════════════════════════════════
+       HERO
+    ══════════════════════════════════ */
+    .hero {
+      position: relative; min-height: 100dvh;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: url('selva mia 3.png') center/cover no-repeat;
+      animation: zoom-in 8s ease-out forwards;
+    }
+    @keyframes zoom-in {
+      from { transform: scale(1.07); }
+      to   { transform: scale(1); }
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(5,10,5,0.6)  0%,
+        rgba(5,10,5,0.52) 35%,
+        rgba(5,10,5,0.65) 75%,
+        rgba(5,10,5,0.82) 100%
+      );
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center;
+      padding: 100px 24px 80px;
+      max-width: 760px;
+      animation: rise 1s 0.2s both;
+    }
+    @keyframes rise {
+      from { opacity:0; transform: translateY(24px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    /* logo hero */
+    .hero-brand {
+      display: flex; flex-direction: column; align-items: center;
+      margin-bottom: 32px;
+    }
+    .hero-brand img {
+      width: 200px;
+      filter: brightness(0) invert(1);
+      filter: drop-shadow(0 2px 16px rgba(0,0,0,0.5)) brightness(0) invert(1);
+    }
+
+    /* COCINA · TRAGOS · MÚSICA */
+    .hero-tags {
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.72rem; font-weight: 400;
+      letter-spacing: 0.25em; text-transform: uppercase;
+      color: rgba(255,255,255,0.48);
+      margin-bottom: 32px;
+    }
+
+    /* Main headline */
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 8vw, 5.8rem);
+      font-weight: 400;
+      line-height: 1.15;
+      color: var(--white);
+      margin-bottom: 24px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--green);
+    }
+
+    /* description */
+    .hero-desc {
+      font-family: 'Roboto', sans-serif;
+      font-size: 1rem; font-weight: 300; line-height: 1.7;
+      color: rgba(255,255,255,0.6);
+      max-width: 480px;
+      margin-bottom: 40px;
+    }
+    .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+    /* WhatsApp floating */
+    .wa-float {
+      position: fixed; bottom: 28px; right: 28px; z-index: 800;
+      display: flex; align-items: center; gap: 8px;
+      background: var(--green); color: var(--black);
+      padding: 10px 18px 10px 14px;
+      border-radius: 50px;
+      text-decoration: none; font-family: 'Roboto', sans-serif;
+      font-size: 0.85rem; font-weight: 500;
+      box-shadow: 0 6px 24px rgba(76,175,80,0.4);
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .wa-float:hover { background: var(--green-lt); transform: translateY(-2px); box-shadow: 0 10px 32px rgba(76,175,80,0.5); }
+    .wa-float svg { width: 18px; height: 18px; fill: var(--black); flex-shrink: 0; }
+
+    .btn-pri {
+      padding: 13px 30px;
+      background: var(--green); color: var(--black);
+      font-family: 'Roboto', sans-serif; font-size: 0.9rem; font-weight: 500;
+      border: none; border-radius: var(--radius);
+      cursor: pointer; text-decoration: none;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .btn-pri:hover { background: var(--green-lt); transform: translateY(-2px); box-shadow: 0 10px 24px rgba(76,175,80,0.3); }
+    .btn-pri:active { transform: scale(0.98); }
+
+    .btn-sec {
+      padding: 13px 30px;
+      background: transparent; color: var(--white);
+      font-family: 'Roboto', sans-serif; font-size: 0.9rem; font-weight: 400;
+      border: 1px solid rgba(255,255,255,0.3); border-radius: var(--radius);
+      cursor: pointer; text-decoration: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .btn-sec:hover { border-color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.06); }
+
+    .scroll-hint {
+      position: absolute; bottom: 32px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      color: rgba(255,255,255,0.38);
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase;
+      animation: rise 1s 1s both;
+    }
+    .scroll-hint .line {
+      width: 1px; height: 40px;
+      background: linear-gradient(to bottom, transparent, rgba(76,175,80,0.7));
+      animation: line-drop 2.2s ease-in-out infinite;
+    }
+    @keyframes line-drop {
+      0%,100% { transform:scaleY(0); transform-origin:top; }
+      50%      { transform:scaleY(1); transform-origin:top; }
+    }
+
+    /* ══════════════════════════════════
+       SHARED
+    ══════════════════════════════════ */
+    .sec { padding: 100px 80px; }
+
+    .label {
+      display: inline-block;
+      font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--green-lt); margin-bottom: 12px;
+      font-family: 'Roboto', sans-serif; font-weight: 500;
+    }
+    .title {
+      font-family: 'Ubuntu', sans-serif;
+      font-size: clamp(1.9rem, 4vw, 3.2rem);
+      font-weight: 700; line-height: 1.15;
+      color: var(--white); letter-spacing: -0.01em;
+    }
+    .title em { font-style: italic; color: var(--green-lt); }
+
+    /* ══════════════════════════════════
+       NOSOTROS
+    ══════════════════════════════════ */
+    #nosotros {
+      background: var(--dark);
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px; align-items: center;
+    }
+    .nos-img {
+      position: relative; border-radius: var(--radius);
+      overflow: hidden; aspect-ratio: 4/5;
+    }
+    .nos-img img { width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.6s ease; }
+    .nos-img:hover img { transform:scale(1.04); }
+    .nos-img::after {
+      content:''; position:absolute; inset:0;
+      border: 1px solid var(--border-g); border-radius: var(--radius); pointer-events:none;
+    }
+    .nos-text p { font-size: 0.97rem; color: var(--muted); line-height: 1.85; margin-bottom: 18px; }
+
+    .stats {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 20px;
+      margin-top: 44px; padding-top: 44px; border-top: 1px solid var(--border);
+    }
+    .stat-n {
+      font-family: 'Ubuntu', sans-serif;
+      font-size: 2.2rem; font-weight: 700; color: var(--green); line-height: 1;
+    }
+    .stat-l { font-size: 0.78rem; color: var(--muted); margin-top: 5px; }
+
+    /* ══════════════════════════════════
+       MENU
+    ══════════════════════════════════ */
+    #menu { background: var(--black); }
+
+    .menu-head {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      gap: 24px; flex-wrap: wrap; margin-bottom: 52px;
+    }
+
+    /* Category tabs — elegant pill style */
+    .tabs {
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .tab {
+      padding: 8px 22px;
+      font-family: 'Roboto', sans-serif; font-size: 0.82rem; font-weight: 400;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); background: none;
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 50px;
+      cursor: pointer; transition: all 0.22s;
+    }
+    .tab.on {
+      border-color: var(--green); color: var(--green);
+      background: rgba(76,175,80,0.08);
+    }
+    .tab:hover:not(.on) { border-color: rgba(255,255,255,0.28); color: var(--light); }
+
+    /* Menu panel */
+    .panel { display: none; }
+    .panel.on {
+      display: block;
+      animation: fadein 0.3s ease;
+    }
+    @keyframes fadein {
+      from { opacity:0; transform:translateY(8px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* Two-column formal grid */
+    .menu-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 80px;
+    }
+
+    /* Individual dish */
+    .mitem {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      column-gap: 24px;
+      padding: 28px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      position: relative;
+    }
+    .mitem::before {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(to right, rgba(76,175,80,0.15), transparent 60%);
+    }
+
+    .mname {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem; font-weight: 500;
+      color: var(--white); line-height: 1.3;
+      grid-column: 1; grid-row: 1;
+    }
+    .mdesc {
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.85rem; font-weight: 300; color: var(--muted);
+      line-height: 1.6; margin-top: 7px;
+      grid-column: 1; grid-row: 2;
+      max-width: 360px;
+    }
+    .mprice {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem; font-weight: 400;
+      color: var(--green);
+      white-space: nowrap;
+      grid-column: 2; grid-row: 1;
+      padding-top: 3px;
+    }
+
+    .badge {
+      display: inline-block; font-size: 0.6rem; padding: 2px 8px;
+      border-radius: 20px;
+      font-family: 'Roboto', sans-serif; font-weight: 500;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      margin-left: 9px; vertical-align: middle;
+      position: relative; top: -1px;
+    }
+    .pop { background: rgba(76,175,80,0.1); color: var(--green-lt); border: 1px solid rgba(76,175,80,0.25); }
+    .new { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.13); }
+
+    /* ══════════════════════════════════
+       GALERIA
+    ══════════════════════════════════ */
+    #galeria { background: var(--mid); }
+
+    .gallery {
+      margin-top: 48px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 580px;
+      gap: 10px;
+    }
+    .gitem { overflow: hidden; border-radius: var(--radius); position: relative; }
+    .gitem img { width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.6s cubic-bezier(0.16,1,0.3,1); }
+    .gitem:hover img { transform:scale(1.05); }
+    .gitem::after {
+      content:''; position:absolute; inset:0;
+      background: linear-gradient(to top, rgba(9,9,9,0.35) 0%, transparent 50%);
+      opacity:0; transition:opacity 0.3s;
+    }
+    .gitem:hover::after { opacity:1; }
+
+    /* ══════════════════════════════════
+       UBICACIÓN
+    ══════════════════════════════════ */
+    #ubicacion {
+      background: var(--dark);
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: start;
+    }
+    .loc-text p { font-size: 0.97rem; color: var(--muted); line-height: 1.85; margin-bottom: 32px; }
+
+    .info-list { display: flex; flex-direction: column; gap: 18px; }
+    .irow { display: flex; gap: 14px; align-items: flex-start; }
+    .iicon {
+      width: 40px; height: 40px; flex-shrink: 0;
+      border-radius: var(--radius);
+      background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.22);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .iicon svg { width: 17px; height: 17px; stroke: var(--green-lt); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+    .itxt strong { display: block; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+    .itxt span { font-size: 0.93rem; color: var(--white); line-height: 1.55; }
+
+    .mapbox {
+      border-radius: var(--radius); overflow: hidden;
+      border: 1px solid var(--border-g); height: 420px;
+    }
+    .mapbox iframe { width:100%; height:100%; border:none; filter: invert(90%) hue-rotate(180deg) saturate(0.7); }
+
+    /* ══════════════════════════════════
+       RESERVAS
+    ══════════════════════════════════ */
+    #reservas {
+      background: var(--black);
+      text-align: center; padding: 110px 80px;
+    }
+    .res-inner { max-width: 540px; margin: 0 auto; }
+    .res-inner p { font-size: 1rem; color: var(--muted); line-height: 1.8; margin: 16px 0 36px; }
+    .res-btns { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+
+    /* ══════════════════════════════════
+       FOOTER
+    ══════════════════════════════════ */
+    footer {
+      background: var(--card);
+      padding: 64px 80px 40px;
+      border-top: 1px solid var(--border);
+    }
+    .foot-grid {
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 40px; margin-bottom: 56px;
+    }
+    .foot-logo img { height: 50px; filter: brightness(0) invert(1); margin-bottom: 14px; display: block; }
+    .foot-desc { font-size: 0.86rem; color: var(--muted); line-height: 1.8; max-width: 240px; }
+    .foot-col h4 { font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; font-family: 'Roboto', sans-serif; font-weight: 500; }
+    .foot-col ul { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+    .foot-col ul li a { font-size: 0.875rem; color: var(--light); text-decoration: none; transition: color 0.2s; }
+    .foot-col ul li a:hover { color: var(--green-lt); }
+
+    .foot-bottom {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 28px; border-top: 1px solid var(--border);
+      flex-wrap: wrap; gap: 12px;
+    }
+    .foot-bottom p { font-size: 0.78rem; color: var(--muted); }
+    .socials { display: flex; gap: 10px; }
+    .soc {
+      width: 34px; height: 34px; border-radius: 8px;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); text-decoration: none;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+    .soc:hover { border-color: var(--green); color: var(--green); background: rgba(76,175,80,0.08); }
+    .soc svg { width: 15px; height: 15px; fill: currentColor; }
+
+    /* ══════════════════════════════════
+       REVEAL
+    ══════════════════════════════════ */
+    .rv { opacity:0; transform:translateY(24px); transition:opacity 0.7s ease, transform 0.7s ease; }
+    .rv.vis { opacity:1; transform:translateY(0); }
+    .rv.d1 { transition-delay:0.1s; }
+    .rv.d2 { transition-delay:0.2s; }
+    .rv.d3 { transition-delay:0.3s; }
+
+    /* ══════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════ */
+    @media (max-width: 1100px) {
+      .sec { padding: 80px 40px; }
+      nav  { padding: 0 24px; }
+      #nosotros { grid-template-columns: 1fr; gap: 40px; }
+      .nos-img  { aspect-ratio: 16/9; }
+      #ubicacion { grid-template-columns: 1fr; }
+      .foot-grid { grid-template-columns: 1fr 1fr; }
+      .gallery { grid-template-columns: 1fr 1fr; grid-template-rows: 260px 260px 260px; }
+      .gallery .gitem:first-child { grid-row: auto; }
+    }
+    @media (max-width: 768px) {
+      .sec { padding: 60px 20px; }
+      nav  { padding: 0 18px; }
+      .nav-links, .nav-right { display: none; }
+      .ham { display: flex; }
+      .hero-logo { width: 130px; }
+      .menu-cols { grid-template-columns: 1fr; }
+      .menu-head { flex-direction: column; align-items: flex-start; }
+      footer { padding: 44px 20px 30px; }
+      .foot-grid { grid-template-columns: 1fr; gap: 28px; }
+      .foot-bottom { flex-direction: column; align-items: flex-start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      #reservas { padding: 64px 20px; }
+      .gallery { grid-template-columns: 1fr; grid-template-rows: 320px 320px; }
+      .scroll-hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAV ────────────────────────────────────── -->
+<nav id="nav">
+  <a href="#inicio" class="nav-logo">
+    <img src="selva mia logo.png" alt="Selva Mia">
+    <span>Selva Mia</span>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#nosotros">Nosotros</a></li>
+    <li>
+      <a href="#menu">
+        Menú
+        <svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4l4 4 4-4"/></svg>
+      </a>
+      <div class="drop">
+        <a href="#menu" onclick="setTab('entradas');closeMob()">Entradas</a>
+        <a href="#menu" onclick="setTab('principales');closeMob()">Principales <span class="drop-tag">Popular</span></a>
+        <a href="#menu" onclick="setTab('ensaladas');closeMob()">Ensaladas</a>
+        <a href="#menu" onclick="setTab('postres');closeMob()">Postres</a>
+        <a href="#menu" onclick="setTab('bebidas');closeMob()">Bebidas</a>
+      </div>
+    </li>
+    <li><a href="#galeria">Galería</a></li>
+    <li><a href="#ubicacion">Ubicación</a></li>
+  </ul>
+
+  <div class="nav-right" style="display:flex;align-items:center;gap:10px;">
+    <a href="#reservas" class="btn-res">Reservar mesa</a>
+  </div>
+
+  <button class="ham" id="ham" aria-label="Abrir menú">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ─── MOBILE MENU ─────────────────────────────── -->
+<div class="mob-menu" id="mobMenu">
+  <div class="mob-item"><a href="#nosotros" class="mob-link">Nosotros</a></div>
+  <div class="mob-item">
+    <button class="mob-toggle" onclick="this.nextElementSibling.classList.toggle('open')">
+      Menú
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4.5l4.5 4.5 4.5-4.5"/></svg>
+    </button>
+    <div class="mob-sub">
+      <a href="#menu" class="mob-link" onclick="setTab('entradas')">Entradas</a>
+      <a href="#menu" class="mob-link" onclick="setTab('principales')">Principales</a>
+      <a href="#menu" class="mob-link" onclick="setTab('ensaladas')">Ensaladas</a>
+      <a href="#menu" class="mob-link" onclick="setTab('postres')">Postres</a>
+      <a href="#menu" class="mob-link" onclick="setTab('bebidas')">Bebidas</a>
+    </div>
+  </div>
+  <div class="mob-item"><a href="#galeria"   class="mob-link">Galería</a></div>
+  <div class="mob-item"><a href="#ubicacion" class="mob-link">Ubicación</a></div>
+  <div class="mob-item"><a href="#reservas"  class="mob-link" style="color:var(--green)">Reservar mesa</a></div>
+</div>
+
+<!-- ─── HERO ─────────────────────────────────────── -->
+<section class="hero" id="inicio">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-brand">
+      <img src="selva mia logo.png" alt="Selva Mia logo">
+    </div>
+    <p class="hero-tags">Cocina &nbsp;·&nbsp; Tragos &nbsp;·&nbsp; Música</p>
+    <h1>Una noche<br>entre <em>la selva.</em></h1>
+    <p class="hero-desc">Donde la ciudad se vuelve jardín. Cocina contemporánea, coctelería de autor y música en vivo bajo un cielo de hojas.</p>
+    <div class="hero-btns">
+      <a href="#menu"      class="btn-pri">Ver el menú &rarr;</a>
+      <a href="#reservas"  class="btn-sec">Reservar mesa</a>
+    </div>
+  </div>
+  <div class="scroll-hint">Desliza<div class="line"></div></div>
+</section>
+
+<!-- WhatsApp flotante -->
+<a href="https://wa.me/5491100000000" target="_blank" rel="noopener" class="wa-float" aria-label="WhatsApp">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+  Escribinos
+</a>
+
+<!-- ─── NOSOTROS ─────────────────────────────────── -->
+<section class="sec" id="nosotros">
+  <div class="nos-img rv">
+    <img src="selva mia 4.png" alt="Terraza exterior de Selva Mia">
+  </div>
+  <div class="nos-text rv d1">
+    <span class="label">Sobre nosotros</span>
+    <h2 class="title">Un rincón de <em>selva</em><br>en la ciudad</h2>
+    <br>
+    <p>Selva Mia nació de la idea de crear un espacio donde la naturaleza, la gastronomía y el buen servicio conviven en perfecta armonía. Un lugar donde cada plato es una experiencia y cada rincón invita a quedarse.</p>
+    <p>Nuestro equipo trabaja con productos de estación y proveedores locales para garantizar la frescura y calidad en cada preparación. Desde las entradas hasta los postres, cada detalle está pensado para sorprenderte.</p>
+    <div class="stats">
+      <div><div class="stat-n">8+</div><div class="stat-l">Años de experiencia</div></div>
+      <div><div class="stat-n">120</div><div class="stat-l">Cubiertos por servicio</div></div>
+      <div><div class="stat-n">4.8★</div><div class="stat-l">Calificación promedio</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── MENÚ ──────────────────────────────────────── -->
+<section class="sec" id="menu">
+  <div class="menu-head">
+    <div class="rv">
+      <span class="label">Nuestra propuesta</span>
+      <h2 class="title">El <em>menú</em></h2>
+    </div>
+    <div class="tabs rv d1">
+      <button class="tab on"  onclick="setTab('entradas')">Entradas</button>
+      <button class="tab"     onclick="setTab('principales')">Principales</button>
+      <button class="tab"     onclick="setTab('ensaladas')">Ensaladas</button>
+      <button class="tab"     onclick="setTab('postres')">Postres</button>
+      <button class="tab"     onclick="setTab('bebidas')">Bebidas</button>
+    </div>
+  </div>
+
+  <!-- ENTRADAS -->
+  <div class="panel on" id="panel-entradas">
+    <div class="menu-cols">
+      <div class="mitem"><div class="mname">Tabla de quesos y fiambres</div><div class="mdesc">Quesos artesanales, jamón crudo, salame y pan de campo</div><div class="mprice">$3.200</div></div>
+      <div class="mitem"><div class="mname">Empanadas de la casa (x3) <span class="badge pop">Popular</span></div><div class="mdesc">Carne cortada a cuchillo, pollo o verdura a elección</div><div class="mprice">$2.100</div></div>
+      <div class="mitem"><div class="mname">Ceviche de mariscos <span class="badge new">Nuevo</span></div><div class="mdesc">Mariscos frescos marinados con limón, ají, cebolla morada y cilantro</div><div class="mprice">$3.600</div></div>
+      <div class="mitem"><div class="mname">Hummus con chips de pita</div><div class="mdesc">Hummus casero con aceite de oliva, pimentón y pan pita tostado</div><div class="mprice">$1.900</div></div>
+      <div class="mitem"><div class="mname">Provoleta a la plancha <span class="badge pop">Popular</span></div><div class="mdesc">Provoleta grillada con orégano, ajo y tomates cherry salteados</div><div class="mprice">$2.400</div></div>
+      <div class="mitem"><div class="mname">Guacamole con nachos artesanales</div><div class="mdesc">Palta fresca, tomate, cebolla morada, lima y nachos de maíz</div><div class="mprice">$1.800</div></div>
+    </div>
+  </div>
+
+  <!-- PRINCIPALES -->
+  <div class="panel" id="panel-principales">
+    <div class="menu-cols">
+      <div class="mitem"><div class="mname">Milanesa napolitana <span class="badge pop">Popular</span></div><div class="mdesc">Milanesa de ternera, salsa napolitana, jamón y mozzarella. Con papas o ensalada</div><div class="mprice">$4.200</div></div>
+      <div class="mitem"><div class="mname">Burger Selva Mia <span class="badge pop">Popular</span></div><div class="mdesc">180g de carne con cheddar, panceta crocante, lechuga, tomate y salsa especial. Con papas</div><div class="mprice">$3.800</div></div>
+      <div class="mitem"><div class="mname">Risotto de hongos y trufa <span class="badge new">Nuevo</span></div><div class="mdesc">Arroz cremoso con hongos de estación, aceite de trufa y parmesano curado</div><div class="mprice">$4.800</div></div>
+      <div class="mitem"><div class="mname">Salmón a la plancha</div><div class="mdesc">Filete de salmón con manteca de hierbas, puré de coliflor y vegetales salteados</div><div class="mprice">$5.200</div></div>
+      <div class="mitem"><div class="mname">Pasta al pesto con camarones</div><div class="mdesc">Linguine con pesto de albahaca, camarones salteados, cherry y parmesano</div><div class="mprice">$4.400</div></div>
+      <div class="mitem"><div class="mname">Pollo grillado con quinoa</div><div class="mdesc">Pechuga de campo grillada con quinoa tricolor, palta y aderezo de limón</div><div class="mprice">$3.600</div></div>
+    </div>
+  </div>
+
+  <!-- ENSALADAS -->
+  <div class="panel" id="panel-ensaladas">
+    <div class="menu-cols">
+      <div class="mitem"><div class="mname">Ensalada César <span class="badge pop">Popular</span></div><div class="mdesc">Romana, pollo grillado, crutones caseros, anchoas y aderezo César</div><div class="mprice">$2.600</div></div>
+      <div class="mitem"><div class="mname">Ensalada Griega</div><div class="mdesc">Tomate, pepino, cebolla morada, aceitunas negras y queso feta</div><div class="mprice">$2.100</div></div>
+      <div class="mitem"><div class="mname">Rúcula y parmesano</div><div class="mdesc">Rúcula fresca, virutas de parmesano, tomates cherry y vinagreta de mostaza</div><div class="mprice">$1.900</div></div>
+      <div class="mitem"><div class="mname">Ensalada de la huerta <span class="badge new">Nuevo</span></div><div class="mdesc">Mix de hojas verdes, zanahoria, pepino, remolacha y aderezo de naranja</div><div class="mprice">$2.000</div></div>
+    </div>
+  </div>
+
+  <!-- POSTRES -->
+  <div class="panel" id="panel-postres">
+    <div class="menu-cols">
+      <div class="mitem"><div class="mname">Helado de frutilla artesanal <span class="badge pop">Popular</span></div><div class="mdesc">3 bochas de helado de frutilla con coulis de frutos rojos y menta fresca</div><div class="mprice">$1.400</div></div>
+      <div class="mitem"><div class="mname">Lava cake de chocolate</div><div class="mdesc">Fondant tibio de chocolate negro con centro fluido y helado de vainilla</div><div class="mprice">$2.100</div></div>
+      <div class="mitem"><div class="mname">Tiramisú de la casa <span class="badge pop">Popular</span></div><div class="mdesc">Clásico tiramisú con mascarpone, café espresso y cacao amargo</div><div class="mprice">$1.900</div></div>
+      <div class="mitem"><div class="mname">Cheesecake de frutos rojos</div><div class="mdesc">Cheesecake horneado con cobertura de frambuesas frescas y reducción</div><div class="mprice">$1.800</div></div>
+      <div class="mitem"><div class="mname">Panqueques con dulce de leche <span class="badge pop">Popular</span></div><div class="mdesc">Panqueques esponjosos con dulce de leche repostero y helado de vainilla</div><div class="mprice">$1.600</div></div>
+      <div class="mitem"><div class="mname">Brownie de nuez</div><div class="mdesc">Brownie tibio con nueces y helado de crema americana</div><div class="mprice">$1.700</div></div>
+    </div>
+  </div>
+
+  <!-- BEBIDAS -->
+  <div class="panel" id="panel-bebidas">
+    <div class="menu-cols">
+      <div class="mitem"><div class="mname">Aperol Spritz <span class="badge pop">Popular</span></div><div class="mdesc">Aperol, Prosecco, soda y rodaja de naranja</div><div class="mprice">$2.400</div></div>
+      <div class="mitem"><div class="mname">Limonada casera</div><div class="mdesc">Limón exprimido, azúcar, menta y agua mineral. También de maracuyá</div><div class="mprice">$1.100</div></div>
+      <div class="mitem"><div class="mname">Vinos por copa</div><div class="mdesc">Selección de tintos y blancos de bodegas de Mendoza y San Juan</div><div class="mprice">Desde $1.600</div></div>
+      <div class="mitem"><div class="mname">Cerveza artesanal <span class="badge new">Nuevo</span></div><div class="mdesc">Rubia, roja o negra elaborada por cervecería local. En lata o chopera</div><div class="mprice">$1.400</div></div>
+      <div class="mitem"><div class="mname">Agua mineral</div><div class="mdesc">Con o sin gas, 500ml o 1lt</div><div class="mprice">$700 / $1.100</div></div>
+      <div class="mitem"><div class="mname">Café y espresso</div><div class="mdesc">Cortado, latte, cappuccino y café de filtro de origen</div><div class="mprice">Desde $900</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── GALERÍA ───────────────────────────────────── -->
+<section class="sec" id="galeria">
+  <span class="label rv">Momentos</span>
+  <h2 class="title rv d1">Nuestro <em>espacio</em></h2>
+  <div class="gallery">
+    <div class="gitem rv">   <img src="selva mia 2.png" alt="Mesa llena en Selva Mia"></div>
+    <div class="gitem rv d1"><img src="selva mia 5.png" alt="Platos y bebidas"></div>
+  </div>
+</section>
+
+<!-- ─── UBICACIÓN ────────────────────────────────── -->
+<section class="sec" id="ubicacion">
+  <div class="loc-text rv">
+    <span class="label">Cómo llegar</span>
+    <h2 class="title">Encontranos en<br><em>Palermo Soho</em></h2>
+    <br>
+    <p>Estamos sobre Costa Rica, en el corazón de Palermo Soho. A pocas cuadras de las plazas y del movimiento del barrio, con fácil acceso en transporte público y estacionamiento en la zona.</p>
+    <div class="info-list">
+      <div class="irow">
+        <div class="iicon">
+          <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+        </div>
+        <div class="itxt">
+          <strong>Dirección</strong>
+          <span>Costa Rica 4651, Palermo Soho<br>Buenos Aires, Argentina</span>
+        </div>
+      </div>
+      <div class="irow">
+        <div class="iicon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="itxt">
+          <strong>Horarios</strong>
+          <span>Lun–Vie: 12:00–15:30 y 20:00–00:00<br>Sáb–Dom: 12:00–01:00</span>
+        </div>
+      </div>
+      <div class="irow">
+        <div class="iicon">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012.18 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.18 6.18l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+        </div>
+        <div class="itxt">
+          <strong>Reservas y consultas</strong>
+          <span>WhatsApp o llamadas al +54 11 XXXX-XXXX</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mapbox rv d1">
+    <iframe
+      src="https://maps.google.com/maps?q=Costa+Rica+4651+Palermo+Soho+Buenos+Aires+Argentina&output=embed"
+      allowfullscreen loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
+      title="Selva Mia – Costa Rica 4651, Palermo Soho">
+    </iframe>
+  </div>
+</section>
+
+<!-- ─── RESERVAS ─────────────────────────────────── -->
+<section id="reservas">
+  <div class="res-inner">
+    <span class="label rv">Reservas</span>
+    <h2 class="title rv d1">¿Listo para <em>visitarnos?</em></h2>
+    <p class="rv d2">Reservá tu mesa y viví una experiencia gastronómica única rodeada de naturaleza. Aceptamos grupos y eventos privados.</p>
+    <div class="res-btns rv d3">
+      <a href="https://wa.me/5491100000000" target="_blank" rel="noopener" class="btn-pri">Reservar por WhatsApp</a>
+      <a href="tel:+5491100000000" class="btn-sec">Llamar ahora</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ───────────────────────────────────── -->
+<footer>
+  <div class="foot-grid">
+    <div class="foot-logo">
+      <img src="selva mia logo.png" alt="Selva Mia">
+      <p class="foot-desc">Costa Rica 4651, Palermo Soho, Buenos Aires.<br>Un rincón de naturaleza en el corazón de la ciudad.</p>
+    </div>
+    <div class="foot-col">
+      <h4>Menú</h4>
+      <ul>
+        <li><a href="#menu" onclick="setTab('entradas')">Entradas</a></li>
+        <li><a href="#menu" onclick="setTab('principales')">Principales</a></li>
+        <li><a href="#menu" onclick="setTab('ensaladas')">Ensaladas</a></li>
+        <li><a href="#menu" onclick="setTab('postres')">Postres</a></li>
+        <li><a href="#menu" onclick="setTab('bebidas')">Bebidas</a></li>
+      </ul>
+    </div>
+    <div class="foot-col">
+      <h4>Navegación</h4>
+      <ul>
+        <li><a href="#inicio">Inicio</a></li>
+        <li><a href="#nosotros">Nosotros</a></li>
+        <li><a href="#galeria">Galería</a></li>
+        <li><a href="#ubicacion">Ubicación</a></li>
+        <li><a href="#reservas">Reservas</a></li>
+      </ul>
+    </div>
+    <div class="foot-col">
+      <h4>Contacto</h4>
+      <ul>
+        <li><a href="#">@selvamia.ba</a></li>
+        <li><a href="#">Facebook</a></li>
+        <li><a href="https://wa.me/5491100000000" target="_blank">WhatsApp</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <p>© 2025 Selva Mia – Costa Rica 4651, Palermo Soho, Buenos Aires</p>
+    <div class="socials">
+      <a href="#" class="soc" aria-label="Instagram">
+        <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      </a>
+      <a href="#" class="soc" aria-label="Facebook">
+        <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Nav scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 60), { passive: true });
+
+  // Hamburger
+  const ham = document.getElementById('ham');
+  const mob = document.getElementById('mobMenu');
+  ham.addEventListener('click', () => { ham.classList.toggle('open'); mob.classList.toggle('open'); });
+  document.querySelectorAll('.mob-link').forEach(l => l.addEventListener('click', closeMob));
+  function closeMob() { ham.classList.remove('open'); mob.classList.remove('open'); }
+
+  // Menu tabs
+  function setTab(id) {
+    const order = ['entradas','principales','ensaladas','postres','bebidas'];
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('on', order[i] === id));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+    document.getElementById('panel-' + id).classList.add('on');
+    document.getElementById('menu').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Reveal
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); obs.unobserve(e.target); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -36px 0px' });
+  document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
